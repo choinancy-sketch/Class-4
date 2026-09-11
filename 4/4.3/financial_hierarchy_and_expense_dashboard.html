@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Hierarchy & Expense Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Load Google Charts API -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            color: #1e293b; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+        }
+
+        header {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .brand-icon {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .brand h1 { font-size: 1.1rem; font-weight: 700; color: #0f172a; line-height: 1.2; }
+        .brand p { font-size: 0.75rem; color: #64748b; }
+        .badge-live {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: #f1f5f9;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        main {
+            flex-grow: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .metric-card {
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .metric-card p {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+        }
+        .metric-card h2 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin-top: 0.25rem;
+        }
+        .metric-trend {
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.35rem;
+        }
+        .trend-up { color: #059669; }
+        .trend-neutral { color: #2563eb; }
+        .trend-warning { color: #d97706; }
+        
+        .metric-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+        .bg-blue { background-color: #eff6ff; color: #2563eb; }
+        .bg-emerald { background-color: #ecfdf5; color: #059669; }
+        .bg-amber { background-color: #fffbeb; color: #d97706; }
+
+        .card {
+            background: #ffffff;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+            padding: 1.5rem;
+            overflow: hidden;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 1rem;
+        }
+        .card-title h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-title p {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+        }
+        .tag {
+            font-size: 0.7rem;
+            font-family: monospace;
+            padding: 0.25rem 0.6rem;
+            border-radius: 0.375rem;
+            border: 1px solid;
+        }
+        .tag-blue { background-color: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+        .tag-emerald { background-color: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 1rem 0;
+        }
+
+        footer {
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        /* Google OrgChart custom overrides */
+        .google-visualization-orgchart-node {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+            color: white !important;
+            border: 1px solid #1e40af !important;
+            border-radius: 0.75rem !important;
+            padding: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .google-visualization-orgchart-lineleft, 
+        .google-visualization-orgchart-lineright, 
+        .google-visualization-orgchart-linebottom {
+            border-color: #cbd5e1 !important;
+        }
+
+        @media(max-width: 768px) {
+            main { padding: 1rem; }
+            .header-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <div>
+                    <h1>Corporate Finance & Org Chart</h1>
+                    <p>Google Charts Powered Financial Reporting</p>
+                </div>
+            </div>
+             
+        </div>
+    </header>
+
+    <main>
+        <!-- Summary Metric Cards -->
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div>
+                    <p>Total Corporate Budget</p>
+                    <h2>$4,250,000</h2>
+                    <span class="metric-trend trend-up">
+                        <i class="fa-solid fa-arrow-trend-up"></i> +8.4% vs last year
+                    </span>
+                </div>
+                <div class="metric-icon bg-blue">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <p>Allocated Expenses</p>
+                    <h2>$3,890,000</h2>
+                    <span class="metric-trend trend-neutral">
+                        <i class="fa-solid fa-circle-check"></i> 91.5% utilization rate
+                    </span>
+                </div>
+                <div class="metric-icon bg-emerald">
+                    <i class="fa-solid fa-coins"></i>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div>
+                    <p>Active Cost Centers</p>
+                    <h2>5 Departments</h2>
+                    <span class="metric-trend trend-warning">
+                        <i class="fa-solid fa-circle-info"></i> All audited quarterly
+                    </span>
+                </div>
+                <div class="metric-icon bg-amber">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column Chart Section -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <h2><i class="fa-solid fa-chart-column" style="color: #059669;"></i> Departmental Expense Allocation ($ USD)</h2>
+                    <p>Google Charts Column visual comparing allocated budget against actual expenditures.</p>
+                </div>
+                <span class="tag tag-emerald">Fiscal Year 2026</span>
+            </div>
+            
+            <div id="columnChartDiv" style="width: 100%; height: 380px;"></div>
+        </div>
+    </main>
+
+    <script type="text/javascript">
+        // Load Google Charts library
+        google.charts.load('current', {packages:['corechart']});
+        google.charts.setOnLoadCallback(drawCharts);
+
+        function drawCharts() {
+            drawColumnChart();
+        }
+
+        // Draw Google ColumnChart for Expenses
+        function drawColumnChart() {
+            var data = google.visualization.arrayToDataTable([
+                ['Department', 'Allocated Budget', 'Actual Spent'],
+                ['Treasury', 950000, 890000],
+                ['Controller', 1400000, 1310000],
+                ['FP&A', 1540000, 1450000],
+                ['Tax & Compliance', 360000, 240000]
+            ]);
+
+            var options = {
+                chartArea: {width: '85%', height: '70%'},
+                colors: ['#2563eb', '#059669'],
+                fontName: 'Inter',
+                hAxis: {
+                    title: 'Departmental Cost Centers',
+                    titleTextStyle: {color: '#64748b', fontSize: 12}
+                },
+                vAxis: {
+                    title: 'Amount in USD ($)',
+                    titleTextStyle: {color: '#64748b', fontSize: 12},
+                    format: 'short'
+                },
+                legend: {position: 'top', alignment: 'end'}
+            };
+
+            var chart = new google.visualization.ColumnChart(document.getElementById('columnChartDiv'));
+            chart.draw(data, options);
+        }
+
+        // Responsive chart redraw on window resize
+        window.addEventListener('resize', function() {
+            drawCharts();
+        });
+    </script>
+</body>
+</html>
